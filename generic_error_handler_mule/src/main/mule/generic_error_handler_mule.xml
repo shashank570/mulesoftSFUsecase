@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracing="http://www.mulesoft.org/schema/mule/tracing"
+	xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd
+http://www.mulesoft.org/schema/mule/tracing http://www.mulesoft.org/schema/mule/tracing/current/mule-tracing.xsd">
+	<error-handler name="globalErrorHandler"
+		doc:id="57a8d2ca-651c-4935-b3c2-17c7cd42dfbf">
+		<on-error-propagate type="APIKIT:BAD_REQUEST">
+			<tracing:with-correlation-id
+				doc:name="update correlationid"
+				doc:id="bacca6db-4a48-4157-b361-3c6b90daecdc"
+				correlationId="#[vars.customCorrelator default correlationId]">
+				<ee:transform doc:name="Set Error Message">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": false,
+	"appName": Mule::p("app.name"),
+	"timestamp": now() >> "UTC",
+	"correlationId": correlationId,
+	"errors": {
+		"code": 400,
+		"reason": error.errorType.asString default "BAD:REQUEST",
+		"message": error.description default "invalid request"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[400
+					]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="error-log-subFlow"
+					doc:id="7c890960-c0de-4a6c-bc3d-86281c9b0e9b"
+					name="error-log-subFlow" />
+			</tracing:with-correlation-id>
+		</on-error-propagate>
+		<on-error-propagate type="APIKIT:NOT_FOUND">
+			<tracing:with-correlation-id
+				doc:name="update correlationid"
+				doc:id="e339a59b-4df4-4db4-9142-d24665f6362c"
+				correlationId="#[vars.customCorrelator default correlationId]">
+				<ee:transform doc:name="Set Error Message">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": false,
+	"appName": Mule::p("app.name"),
+	"timestamp": now() >> "UTC",
+	"correlationId": correlationId,
+	"errors": {
+		"code": 404,
+		"reason": error.errorType.asString default "HTTP:NOT_FOUND",
+		"message": error.description default "Resource not found"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[404
+					]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="error-log-subFlow"
+					doc:id="279a9188-4c76-4a43-9245-d8139085ffee"
+					name="error-log-subFlow" />
+			</tracing:with-correlation-id>
+		</on-error-propagate>
+		<on-error-propagate
+			type="APIKIT:METHOD_NOT_ALLOWED">
+			<tracing:with-correlation-id
+				doc:name="update correlationid"
+				doc:id="93eebcb4-8292-45f1-b322-f46b9907ed40"
+				correlationId="#[vars.customCorrelator default correlationId]">
+				<ee:transform doc:name="Set Error Message">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": false,
+	"appName": Mule::p("app.name"),
+	"timestamp": now() >> "UTC",
+	"correlationId": correlationId,
+	"errors": {
+		"code": 405,
+		"reason": error.errorType.asString default  "HTTP:INVALID_METHOD",
+		"message": error.description default "method not supported"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[405
+					]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="error-log-subFlow"
+					doc:id="68746d76-acbb-4677-83ff-ffb2e1f0c8c0"
+					name="error-log-subFlow" />
+			</tracing:with-correlation-id>
+		</on-error-propagate>
+		<on-error-propagate
+			type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+			<tracing:with-correlation-id
+				doc:name="update correlationid"
+				doc:id="ed5c49c8-8349-4201-adea-c2858183b7ec"
+				correlationId="#[vars.customCorrelator default correlationId]">
+				<ee:transform doc:name="Set Error Message">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": false,
+	"appName": Mule::p("app.name"),
+	"timestamp": now() >> "UTC",
+	"correlationId": correlationId,
+	"errors": {
+		"code": 415,
+		"reason": error.errorType.asString default  "HTTP:INVALID_MEDIA",
+		"message": error.description default "media not supported"
+	}
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[415
+					]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="error-log-subFlow"
+					doc:id="e984e96f-175a-496f-97c8-2977f1b1be59"
+					name="error-log-subFlow" />
+			</tracing:with-correlation-id>
+		</on-error-propagate>
+		<on-error-propagate type="ANY"
+			enableNotifications="true" logException="true">
+			<tracing:with-correlation-id
+				doc:name="update correlationid"
+				doc:id="6ff5fd85-62b2-401d-97d2-bd7ca8d29ca9"
+				correlationId="#[vars.customCorrelator default correlationId]">
+				<set-variable
+					value="#[%dw 2.0&#10;output application/java&#10;var errorIdentifier = error.errorType.identifier default 'INTERNAL_SERVER_ERROR'&#10;---&#10;Mule::p(errorIdentifier ++ '.code') default 500]"
+					doc:name="httpStatus" doc:id="bd8ab974-2b3a-440b-a8ad-6dff18e8a2e6"
+					variableName="httpStatus" />
+				<ee:transform doc:name="Set Error Message"
+					doc:id="3f19e598-a321-4d4e-97ff-95a3a5621da9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var errorIdentifier = error.errorType.identifier default 'INTERNAL_SERVER_ERROR'
+var description = error.description default 'No description is present'
+---
+{
+	"status": false,
+	"appName": Mule::p("app.name"),
+	"timestamp": now() >> "UTC",
+	"correlationId": correlationId,
+	"errors": {
+		"code": vars.httpStatus  default 500,
+		"reason": if ( !isEmpty(error.muleMessage.payload) ) error.muleMessage.payload.errors.reason  else (errorIdentifier default "HTTP:INTERNAL_SERVER_ERROR"),
+		"message": if ( !isEmpty(error.muleMessage.payload) and (error.muleMessage.payload.errors.message contains "https://") ) "some server side error occurred"
+			 else if ( !isEmpty(error.muleMessage.payload) ) error.muleMessage.payload.errors.message
+			 else if ( description contains "https://" ) "some server side error occurred"
+		
+			else (description default "some server side error occurred")
+	}
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="error-log-subFlow"
+					doc:id="cb083346-feda-42b9-8460-9bead3e8725a"
+					name="error-log-subFlow" />
+			</tracing:with-correlation-id>
+		</on-error-propagate>
+	</error-handler>
+	<sub-flow name="error-log-subFlow"
+		doc:id="81047af7-7241-4015-add5-39a0123b5c5a">
+		<json-logger:logger doc:name="Error Occurred"
+			doc:id="5d61092f-d6f7-4331-b6eb-1233f777e614"
+			message='#["Error Occurred"]' tracePoint="EXCEPTION" category='#[Mule::p("log.category.error")]'
+			priority="ERROR" config-ref="JSON_Logger_Config_masked">
+			<json-logger:content><![CDATA[#[import modules::JSONLoggerModule
+output application/json
+---
+{
+	payload: JSONLoggerModule::stringifyNonJSON(payload),
+	attributes: JSONLoggerModule::stringifyNonJSON(attributes),
+	error: JSONLoggerModule::stringifyNonJSON(error)
+}]]]></json-logger:content>
+		</json-logger:logger>
+	</sub-flow>
+</mule>

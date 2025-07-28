@@ -1,0 +1,33 @@
+BAD_REQUEST:
+ code: "400"
+BAD_GATEWAY:
+ code: "502"
+NOT_FOUND:
+ code: "404"
+METHOD_NOT_ALLOWED:
+ code: "405"
+NOT_ACCEPTABLE:
+ code: "406"
+UNSUPPORTED_MEDIA_TYPE:
+ code: "415"
+NOT_IMPLEMENTED:
+ code: "501"
+INTERNAL_SERVER_ERROR:
+ code: "500"
+RETRY_EXHAUSTED:
+ code: "500"
+TIMEOUT:
+ code: "408"
+BASIC_AUTHENTICATION:
+ code: "401" 
+ 
+json:
+ logger:
+   application:
+     version: v1
+     disabled: content
+     masked: client_id,client_secret
+log:
+ category:
+   error: "ERROR"
+   other: "OTHER"

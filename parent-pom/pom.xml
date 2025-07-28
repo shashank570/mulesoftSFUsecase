@@ -18,11 +18,11 @@
 		<!--  this was added to 412 Precondition Failed -->
 		<exchange-mule-maven-plugin-version>0.0.17</exchange-mule-maven-plugin-version>
 		<!-- Runtime and Connector Versions -->
-		<app.runtime>4.8.0</app.runtime>
+		<app.runtime>4.9.0</app.runtime>
 		<mule-http-connector-version>1.8.0</mule-http-connector-version>
-		<mule-tracing-module-version>1.0.0</mule-tracing-module-version>
+		<mule-tracing-module-version>1.2.0</mule-tracing-module-version>
 		<mule-secure-configuration-property-module-version>1.2.7</mule-secure-configuration-property-module-version>
-		<json-logger-version>2.1.0</json-logger-version>
+		<json-logger-version>1.0.0</json-logger-version>
 		<generic-error-handler-version>1.0.0</generic-error-handler-version>
 		<mule-apikit-module-version>1.9.2</mule-apikit-module-version>
 		<type>custom</type>

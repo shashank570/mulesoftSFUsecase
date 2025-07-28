@@ -1,0 +1,19 @@
+api:
+  id: "20451726"
+ 
+https:
+  port: "8082"
+  
+salesforce:
+  keystore: "00DdM000009tSAM.jks"
+  consumer: 
+    key: "3MVG9WVXk15qiz1JNn3E0cfqlpR6CBs40ZSnsj.SNHPYggCNZ9dXTKob_Ex155.Dus.F67ps7ERbFpTadmCGV"
+  certificate:
+    alias: "salesforce"
+  principal: "shashanks57@nttdata.sandbox"
+  token:
+    endpoint: "https://login.salesforce.com/services/oauth2/token"
+  reconnection:
+    frequency: "2000"
+    attempts: "2"
+  fetchFields: name,IsDeleted,email__c,AccountNumber,phone,fax,billingAddress,shippingAddress
