@@ -1,0 +1,90 @@
+<project
+	xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+        https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>6b803037-b7da-4678-8714-01519ec4530a</groupId>
+	<artifactId>parent-pom</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+	<name>Parent POM for MuleSoft Projects</name>
+	<!-- ✅ Shared Properties -->
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<mule-maven-plugin-version>4.3.0</mule-maven-plugin-version>
+		<maven-clean-plugin-version>3.2.0</maven-clean-plugin-version>
+		<!--  this was added to 412 Precondition Failed -->
+		<exchange-mule-maven-plugin-version>0.0.17</exchange-mule-maven-plugin-version>
+		<!-- Runtime and Connector Versions -->
+		<app.runtime>4.8.0</app.runtime>
+		<mule-http-connector-version>1.8.0</mule-http-connector-version>
+		<mule-tracing-module-version>1.0.0</mule-tracing-module-version>
+		<mule-secure-configuration-property-module-version>1.2.7</mule-secure-configuration-property-module-version>
+		<json-logger-version>2.1.0</json-logger-version>
+		<generic-error-handler-version>1.0.0</generic-error-handler-version>
+		<mule-apikit-module-version>1.9.2</mule-apikit-module-version>
+		<type>custom</type>
+	</properties>
+	<!-- ✅ Plugin Management -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${maven-clean-plugin-version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.mule.tools.maven</groupId>
+				<artifactId>mule-maven-plugin</artifactId>
+				<version>${mule-maven-plugin-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+			<!--  this was added to 412 Precondition Failed -->
+			<plugin>
+				<groupId>org.mule.tools.maven</groupId>
+				<artifactId>exchange-mule-maven-plugin</artifactId>
+				<version>${exchange-mule-maven-plugin-version}</version>
+				<executions>
+					<execution>
+						<id>validate</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>exchange-pre-deploy</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>deploy</id>
+						<phase>deploy</phase>
+						<goals>
+							<goal>exchange-deploy</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>Anypoint Exchange</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>mulesoft-releases</id>
+			<name>MuleSoft Releases Repository</name>
+			<url>https://repository.mulesoft.org/releases/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+	<distributionManagement>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>anypoint-exchange-v3</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/organizations/6b803037-b7da-4678-8714-01519ec4530a/maven</url>
+			<layout>default</layout>
+		</repository>
+	</distributionManagement>
+</project>
