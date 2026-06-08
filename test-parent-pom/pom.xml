@@ -42,6 +42,11 @@
 			<artifactId>mule-sockets-connector</artifactId>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+		<dependency>
+				<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
+				<artifactId>json-logger</artifactId>
+				<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
 
 </project>
