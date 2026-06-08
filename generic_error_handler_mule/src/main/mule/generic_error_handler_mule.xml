@@ -189,7 +189,7 @@ var description = error.description default 'No description is present'
 		<json-logger:logger doc:name="Error Occurred"
 			doc:id="5d61092f-d6f7-4331-b6eb-1233f777e614"
 			message='#["Error Occurred"]' tracePoint="EXCEPTION" category='#[Mule::p("log.category.error")]'
-			priority="ERROR" config-ref="JSON_Logger_Config_masked">
+			priority="ERROR" config-ref="JSON_Logger_Config_secured">
 			<json-logger:content><![CDATA[#[import modules::JSONLoggerModule
 output application/json
 ---

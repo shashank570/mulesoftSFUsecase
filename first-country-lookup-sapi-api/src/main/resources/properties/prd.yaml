@@ -1,0 +1,10 @@
+api:
+  id: "20951272"
+ 
+https:
+  port: "8082"
+  
+first-country:
+  protocol: "HTTPS"
+  host: "api.first.org"
+  path: "/data/v1/countries"

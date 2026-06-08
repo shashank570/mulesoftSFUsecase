@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="business-logic-pingSub_Flow" doc:id="be4e00f0-6b59-46a2-8791-42b7f14b22f5" >
+		<ee:transform doc:name="Transform Message" doc:id="61877770-b2df-4ff2-9a67-743c14143fec" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "UP",
+  timestamp: "2026-06-03T12:00:00Z"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="business-logic-get-countrySub_Flow" doc:id="d39987f1-5869-4c68-a12f-31dc37eab038" >
+		<set-variable value='#[output application/json&#10;---&#10;attributes.queryParams.q default ""]' doc:name="Set Country Code" doc:id="1c0595b1-eb7a-4893-a00f-2066fca15eb1" variableName="q"/>
+		<try doc:name="Try" doc:id="4f6abdb0-785e-4e23-8696-16d42da101d5" >
+			<http:request method="GET" doc:name="Request First Country Lookup API" doc:id="d9602e3d-f1ef-4e33-8adb-e16a53bbbdcf" config-ref="HTTP_Request_configuration" path="${first-country.path}">
+				<http:query-params ><![CDATA[#[output application/json
+---
+{
+	"q" : vars.q default ""
+}]]]></http:query-params>
+		</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ca1e5e98-32d9-4cc6-a4ed-8196b7f2d284" type="ANY">
+					<json-logger:logger doc:name="Logger" doc:id="5eb2b924-d946-4b04-8b0a-27321066d4d8" config-ref="JSON_Logger_Config_secured" message="Issue in calling first-country-lookup-api" tracePoint="EXCEPTION" priority="ERROR"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message" doc:id="98279665-64f3-4f8c-8094-97686621fdde" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var countryData = (payload.data pluck ((value, key, index) -> value))[0] default {}
+---
+{
+    "status": payload.status default "",
+    "status-code": payload."status-code" default 0,
+    "country": countryData.country default "",
+    "region": countryData.region default ""
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

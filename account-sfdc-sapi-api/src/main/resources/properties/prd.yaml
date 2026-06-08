@@ -1,0 +1,21 @@
+api:
+  id: "20953602"
+ 
+https:
+  port: "8082"
+  
+first-country:
+  protocol: "HTTPS"
+  host: "api.first.org"
+  path: "/data/v1/countries"
+  
+salesforce-config:
+  consumerKey: "3MVG9rZjd7MXFdLjWlAo93cTZveA9SJ7bNXIYfSNcQ3SN01B1DFXYCFRHzXk3OdUtWr2LaXyIKgfjZqe.hnrS"
+  keyStore: "00DgK00000Pv21u.jks"
+  principal: "shuklashashank57.00e278113674@agentforce.com"
+  fetchFields: "Id, Name, AccountNumber, Type, Phone, Website, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, ShippingCountry"
+  
+  
+query:
+  all-accounts: "SELECT Id, Name, AccountNumber, Type, Phone, Website, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, ShippingCountry FROM Account"
+  by-id: "SELECT Id, Name, AccountNumber, Type, Phone, Website, BillingStreet, BillingCity, BillingState, BillingPostalCode, BillingCountry, ShippingStreet, ShippingCity, ShippingState, ShippingPostalCode, ShippingCountry FROM Account WHERE Id = :accountId"

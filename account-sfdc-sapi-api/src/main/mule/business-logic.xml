@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="update-account-subflow" doc:id="25371664-8fb5-4f0c-b284-5cf792bf1268" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="9dc9805b-0399-4b7a-9065-831e6cbbfee8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{"Id": vars.accountId default ""} ++ payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="edc254f0-20ba-4b3d-9e6a-77555148eb3d" >
+			<salesforce:update type="Account" doc:name="Update Accounts" doc:id="f86be321-20f8-46aa-b047-e4202e48b85b" config-ref="Salesforce_Config">
+			<salesforce:records><![CDATA[#[[payload]]]]></salesforce:records>
+		</salesforce:update>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f7149511-93c9-4549-a1b7-9ddeb7ac1c1f" type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_INPUT, SALESFORCE:OPERATION_NOT_SUPPORTED, SALESFORCE:UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="615f01a1-6868-4ff4-9df4-1c933722d333" config-ref="JSON_Logger_Config_secured" message="Connectivity Issue in calling update operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="200715bf-0a39-4c38-a4fe-b7daf0ac13d5" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="117a8873-f6f4-41cd-88e6-cb9284472ce1" config-ref="JSON_Logger_Config_secured" message="Issue in calling update operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="a364fe11-71e0-4648-9a19-3d61859fb8aa" >
+			<when expression="#[payload.successful]" >
+				<json-logger:logger doc:name="Account Details Updated" doc:id="1276d7b7-d918-436c-a8aa-4525e43ab516" config-ref="JSON_Logger_Config_secured" message='Account Details Updated' tracePoint="AFTER_REQUEST" category="${log.category.salesforce}" />
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: vars.accountId,
+  message: "Account updated successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="400" doc:name="Set Variable" doc:id="7ab7ad96-9096-468a-9bd7-7cd483b2b544" variableName="httpStatus" />
+				<raise-error doc:name="Invalid Data" doc:id="dc891b65-a7da-4cc4-bfe8-f3ebc322b3d5" type="APP:INVALID_DATA" description='#[payload.items.message[0] default "Invalid Data Provided"]' />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="delete-account-subflow" doc:id="57d3f84c-ff9b-4109-bedf-7f4605ba8eff" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<try doc:name="Try" doc:id="d5bde32a-9d6f-4be3-b3f1-028042fa80e4" >
+			<salesforce:delete doc:name="Delete Accounts By ID" doc:id="b742e9f3-0790-49ad-85f0-09dfd958a402" config-ref="Salesforce_Config">
+			<salesforce:ids><![CDATA[#[[vars.accountId]]]]></salesforce:ids>
+		</salesforce:delete>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8c4e4bec-f2f2-4098-8fd8-afe9b5b9037c" type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_INPUT, SALESFORCE:OPERATION_NOT_SUPPORTED, SALESFORCE:UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="59fc603e-ab9c-43bc-bfa0-c7d829fbbb28" config-ref="JSON_Logger_Config_secured" message="Connectivity Issue in calling delete operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="469eb9cb-6055-4833-b9e5-a6f69a9e1253" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="76b1c149-8f9e-4de8-bcf9-db06811520be" config-ref="JSON_Logger_Config_secured" message="Issue in calling delete operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="867ada4d-13c2-4ae8-ac84-1f82ab6021a8" >
+			<when expression="#[payload.successful]">
+				<json-logger:logger doc:name="Logger" doc:id="fbbb45f0-2376-4a54-9b5e-56efbf16de2d" config-ref="JSON_Logger_Config_secured" message="Account Details Deleted" tracePoint="AFTER_REQUEST"/>
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  message: "Account deleted successfully for id: " ++ vars.accountId
+} ]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Set Variable" doc:id="c4a2acdb-fda9-44d2-b6f2-30f7ddfc4cf7" variableName="httpStatus" />
+				<raise-error doc:name="Invalid Data" doc:id="5dc77e05-b6f2-4582-9757-e48356ca7c43" type="APP:NOT_FOUND" description='#["No data found for " ++ vars.accountId]' />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="get-all-account-subflow" doc:id="46bacd74-aca0-4ef1-8980-00ccae4df487" >
+		<set-variable value="${query.all-accounts}" doc:name="Set Variable" doc:id="27e5e345-c5c5-465a-b2b4-ee239e13c2fe" variableName="query_all_account"/>
+		<try doc:name="Try" doc:id="bf1f645b-6bdd-4f05-916d-9a6c40e5ad11" >
+			<salesforce:query-all doc:name="Query all" doc:id="203462a7-bb8c-4e89-b0cc-331c544776b3" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[#[vars.query_all_account]]]></salesforce:salesforce-query>
+		</salesforce:query-all>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1a686bef-2cfc-4988-9605-ad73ff33e0d2" type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_INPUT, SALESFORCE:OPERATION_NOT_SUPPORTED, SALESFORCE:UNAVAILABLE">
+					<json-logger:logger doc:name="Logger" doc:id="2e41fb19-4356-435d-9de3-2fc190f35806" config-ref="JSON_Logger_Config_secured" message="Connectivity Issue in calling query all operation" tracePoint="EXCEPTION" priority="ERROR"/>
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="770853fe-2448-4d7e-a016-689e354ca983" type="ANY">
+					<json-logger:logger doc:name="Logger" doc:id="eacf4968-9210-457e-a497-e2d2c34e2d82" config-ref="JSON_Logger_Config_secured" message="Issue in calling query all operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="24c939b3-797e-40ed-b10c-65dec06f2ad7" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<json-logger:logger doc:name="Logger" doc:id="22c32dc6-6c74-4677-aae0-25879f5ff261" config-ref="JSON_Logger_Config_secured" message="After Calling Query all Operation" tracePoint="AFTER_REQUEST"/>
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((item, index) -> {
+	"Id": item.Id default "",
+	"Name": item.Name default "",
+	"type": item."type" default "",
+	"AccountNumber": item.AccountNumber default "",
+	"Type": item.Type default "",
+	"Website": item.Website default "",
+	"Phone": item.Phone default "",
+	"BillingCountry": item.BillingCountry default "",
+	"BillingState": item.BillingState default "",
+	"BillingCity": item.BillingCity default "",
+	"BillingStreet": item.BillingStreet default "",
+	"BillingPostalCode": item.BillingPostalCode default "",
+	"ShippingCountry": item.ShippingCountry default "",
+	"ShippingState": item.ShippingState default "",
+	"ShippingCity": item.ShippingCity default "",
+	"ShippingStreet": item.ShippingStreet default "",
+	"ShippingPostalCode": item.ShippingPostalCode default ""
+})]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="404" doc:name="Set Variable" doc:id="b24ad690-c429-4e0c-a89a-461e8cc11b62" variableName="httpStatus"/>
+				<raise-error doc:name="Invalid Data" doc:id="fa4f8cd8-9d30-4fd2-9961-a3bfa5ca38b1" type="APP:NOT_FOUND" description='#["No data found for accounts object"]' />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="get-account-by-id-subflow" doc:id="58ebed6d-52a8-4690-9e54-220c3256b344" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<set-variable value="${query.by-id}" doc:name="Set Variable" doc:id="1ca46d35-32d8-4842-b4b2-21651930ca4b" variableName="query_by_id"/>
+		<try doc:name="Try" doc:id="0ad09d19-5031-464c-ba4d-60c05e35cdb0" >
+			<salesforce:retrieve doc:name="Retrieve" doc:id="09aa04ea-fdce-4430-bef4-4b60457d394f" config-ref="Salesforce_Config" type="Account">
+				<salesforce:retrieve-request ><![CDATA[#[{
+	"Ids" : [ vars.accountId ],
+	"Fields" : Mule::p("salesforce-config.fetchFields") splitBy ","
+}]]]></salesforce:retrieve-request>
+			</salesforce:retrieve>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="714cd642-3b5b-4623-83b6-d9d32d0c796d" type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_INPUT, SALESFORCE:OPERATION_NOT_SUPPORTED, SALESFORCE:UNAVAILABLE">
+					<json-logger:logger doc:name="Logger" doc:id="0cd4c97e-491a-4fa5-9d14-3758ccdcc978" config-ref="JSON_Logger_Config_secured" message="Connectivity issue in calling retrieve operation" tracePoint="EXCEPTION" priority="ERROR"/>
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="952005e7-04b1-4ecf-9ae6-884c855031cd" type="ANY">
+					<json-logger:logger doc:name="Logger" doc:id="9382e00a-56dd-477a-93b1-9e061f0d6a10" config-ref="JSON_Logger_Config_secured" message="Issue in calling retrieve operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="00e08c97-ac2f-4580-a877-cd60af1edfaf" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<json-logger:logger doc:name="Logger" doc:id="382d6cc0-8e7d-41e4-abc6-a92d9af9d9d6" config-ref="JSON_Logger_Config_secured" message="After Calling Retrieve Operation" tracePoint="AFTER_REQUEST" />
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"success": true,
+  	"data": {
+		"Id": payload.Id[0] default "",
+		"Name": payload.Name[0] default "",
+		"type": payload."type"[0] default "",
+		"AccountNumber": payload.AccountNumber[0] default "",
+		"Type": payload.Type[0] default "",
+		"Website": payload.Website[0] default "",
+		"Phone": payload.Phone[0] default "",
+		"BillingCountry": payload.BillingCountry[0] default "",
+		"BillingState": payload.BillingState[0] default "",
+		"BillingCity": payload.BillingCity[0] default "",
+		"BillingStreet": payload.BillingStreet[0] default "",
+		"BillingPostalCode": payload.BillingPostalCode[0] default "",
+		"ShippingCountry": payload.ShippingCountry[0] default "",
+		"ShippingState": payload.ShippingState[0] default "",
+		"ShippingCity": payload.ShippingCity[0] default "",
+		"ShippingStreet": payload.ShippingStreet[0] default "",
+		"ShippingPostalCode": payload.ShippingPostalCode[0] default ""
+	}
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Invalid Data" doc:id="c5162d5d-ebba-49e6-b32f-da141933b635" type="APP:NOT_FOUND" description='#["No data found for id " ++ vars.accountId]' />
+				<set-variable value="404" doc:name="Set Variable" doc:id="6f66a603-2444-4651-b5ec-8cdd0a7c9e21" variableName="httpStatus" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="create-account-subflow" doc:id="cb9e9fcb-c782-4978-9f11-87952cda9c8f" >
+		<try doc:name="Try" doc:id="c1fdd02e-f188-45d2-925c-6d0d5361b6ca" >
+			<salesforce:create type="Account" doc:name="Create Accounts" doc:id="5cdbbe0e-cb9a-49a9-aa3d-cf371785572a" config-ref="Salesforce_Config">
+			<salesforce:records><![CDATA[#[[payload]]]]></salesforce:records>
+		</salesforce:create>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="99466289-a352-4b23-ae34-0f2a707f0381" type="SALESFORCE:CONNECTIVITY, SALESFORCE:INVALID_INPUT, SALESFORCE:OPERATION_NOT_SUPPORTED, SALESFORCE:UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="39f7ce07-2df7-4eb5-b810-50af6bd205ce" config-ref="JSON_Logger_Config_secured" message="Connectivity issue in calling create operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d9bca42-8103-47e0-8f12-2542d7a16179" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="d3fa9d03-9250-42e3-af90-d4183c8bcdf0" config-ref="JSON_Logger_Config_secured" message="Issue in calling create operation" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="5512f5af-d554-4e1e-824f-190566babc46" >
+			<when expression="#[payload.successful]" >
+				<json-logger:logger doc:name="Account Details Created" doc:id="241fba57-43ca-45ca-8700-f38cf8aadb76" config-ref="JSON_Logger_Config_secured" message='Account Details Created' tracePoint="AFTER_REQUEST" category="${log.category.salesforce}" />
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: payload.items[0].id default "",
+  message: "Account created successfully"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</when>
+			<otherwise >
+				<set-variable value="400" doc:name="Set Variable" doc:id="e2075e75-60fa-4166-99f2-ded5415c3ab8" variableName="httpStatus" />
+				<raise-error doc:name="Invalid Data" doc:id="9ff5af06-94c1-4b9e-ac27-3ba6c18b2a4d" type="APP:INVALID_DATA" description='#[payload.items.message[0] default "Invalid Data Provided"]' />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="ping-subflow" doc:id="02bc71b4-e6e8-4248-a104-b5f8b9159afb" >
+		<ee:transform doc:name="Transform Message" doc:id="13a90f35-b23e-4b8a-9481-fe589da915d3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "UP",
+  timestamp: "2026-06-03T12:00:00Z"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

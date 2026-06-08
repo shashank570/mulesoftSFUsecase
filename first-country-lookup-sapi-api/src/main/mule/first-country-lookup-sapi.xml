@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <flow name="first-country-lookup-sapi-main">
+        <http:listener config-ref="first-country-lookup-sapi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="first-country-lookup-sapi-config" />
+		<error-handler ref="globalErrorHandler" />
+    </flow>
+    <flow name="first-country-lookup-sapi-console">
+        <http:listener config-ref="first-country-lookup-sapi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="first-country-lookup-sapi-config" />
+    </flow>
+    <flow name="get:\countries:first-country-lookup-sapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="e35674fb-1ae0-4ce1-a0a3-b920c94741b9" config-ref="JSON_Logger_Config_secured" message="get country flow of first-country-lookup-api started"/>
+		<flow-ref doc:name="business-logic-get-countrySub_Flow" doc:id="1aed7459-8677-4830-b2c3-316984aa8811" name="business-logic-get-countrySub_Flow"/>
+		<json-logger:logger doc:name="Logger" doc:id="11d0acb9-7a54-495f-98cb-3a97a8b91a68" config-ref="JSON_Logger_Config_secured" message="get country flow of first-country-lookup-api ended" tracePoint="END"/>
+    </flow>
+    <flow name="get:\ping:first-country-lookup-sapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="105c80fd-1bee-4c04-a94a-c5088c61b8d9" config-ref="JSON_Logger_Config_secured" message="get ping flow of first-country-lookup-api started"/>
+		<flow-ref doc:name="business-logic-pingSub_Flow" doc:id="4478a998-5a82-4cd0-8386-59bfcb2f83a7" name="business-logic-pingSub_Flow"/>
+		<json-logger:logger doc:name="Logger" doc:id="1e9b3f17-3c13-44f5-9efe-15b87ba9e2af" config-ref="JSON_Logger_Config_secured" message="get ping flow of first-country-lookup-api ended" tracePoint="END"/>
+    </flow>
+</mule>

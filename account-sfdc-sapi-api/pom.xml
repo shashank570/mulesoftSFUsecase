@@ -1,38 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
 		<artifactId>parent-pom</artifactId>
 		<version>1.0.0</version>
 	</parent>
+
 	<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
-	<artifactId>generic_error_handler_mulesoft7529</artifactId>
+	<artifactId>account-sfdc-sapi-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>mule-application</packaging>
-	<name>generic_error_handler_mulesoft7529</name>
+
+	<name>account-sfdc-sapi-api</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<app.runtime>4.10.0</app.runtime>
+		<mule.maven.plugin.version>4.5.3</mule.maven.plugin.version>
+		<generic_error_handler_mulesoft7529>1.0.0</generic_error_handler_mulesoft7529>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.2.0</version>
 			</plugin>
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
 				<artifactId>mule-maven-plugin</artifactId>
+				<version>${mule.maven.plugin.version}</version>
 				<extensions>true</extensions>
-				<version>4.5.3</version>
-				<configuration>
-					<classifier>mule-plugin</classifier>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+
 	<dependencies>
 		<dependency>
-			<groupId>org.mule.modules</groupId>
-			<artifactId>mule-tracing-module</artifactId>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-http-connector</artifactId>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-sockets-connector</artifactId>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
+			<artifactId>account-sfdc-sapi</artifactId>
+			<version>1.0.0</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 		<dependency>
 			<groupId>org.mule.modules</groupId>
@@ -41,11 +65,29 @@
 		</dependency>
 		<dependency>
 			<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
+			<artifactId>generic_error_handler_mulesoft7529</artifactId>
+			<version>${generic_error_handler_mulesoft7529}</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.modules</groupId>
+			<artifactId>mule-secure-configuration-property-module</artifactId>
+			<version>1.3.0</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
 			<artifactId>json-logger</artifactId>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.connectors</groupId>
+			<artifactId>mule-salesforce-connector</artifactId>
+			<version>11.2.3</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<repository>
 			<id>anypoint-exchange-v3</id>

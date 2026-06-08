@@ -16,6 +16,9 @@
 		<maven-clean-plugin-version>3.2.0</maven-clean-plugin-version>
 		<mule.maven.plugin.version>4.5.3</mule.maven.plugin.version>
 		<exchange-mule-maven-plugin-version>0.1.7</exchange-mule-maven-plugin-version>
+		<json-logger-version>1.0.0</json-logger-version>
+		<mule-tracing-module-version>1.2.1</mule-tracing-module-version>
+		<mule-apikit-module-version>1.11.10</mule-apikit-module-version>
 		<type>custom</type>
 	</properties>
 
@@ -70,6 +73,24 @@
 				<version>1.2.7</version>
 				<classifier>mule-plugin</classifier>
 			</dependency>
+			<dependency>
+				<groupId>112370ec-fc19-4a96-b7b6-60e04b8cbb0d</groupId>
+				<artifactId>json-logger</artifactId>
+				<version>${json-logger-version}</version>
+				<classifier>mule-plugin</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.mule.modules</groupId>
+				<artifactId>mule-tracing-module</artifactId>
+				<version>${mule-tracing-module-version}</version>
+				<classifier>mule-plugin</classifier>
+			</dependency>
+			<dependency>
+				<groupId>org.mule.modules</groupId>
+	            <artifactId>mule-apikit-module</artifactId>
+				<version>${mule-apikit-module-version}</version>
+				<classifier>mule-plugin</classifier>
+		    </dependency>
 		</dependencies>
 	</dependencyManagement>
 

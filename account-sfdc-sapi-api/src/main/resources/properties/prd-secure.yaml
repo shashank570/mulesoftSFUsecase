@@ -1,0 +1,6 @@
+keystore:
+  keypass: "![EoPI3ultyhktXOVL0tLrwA==]" # key -> mulesoft_sfdcapi, value -> mulesoft
+  pass: "![EoPI3ultyhktXOVL0tLrwA==]" # # key -> mulesoft_sfdcapi, value -> mulesoft
+
+salesforce-config:
+  storePassword: "![dEaQiRVm1lDlzVoDBbQSJfp2nrG+WMwtsm1+fhagDR8=]" # key -> mulesoft_sfdcapi, value -> mulesoft_sfdcapi

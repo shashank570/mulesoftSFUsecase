@@ -1,7 +1,7 @@
 json:
   logger:
     application:
-      name: account-sfdc-sapi
+      name: account-sfdc-sapi-api
       version: v1
       disabled: content
       masked: client_id,client_secret
