@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <flow name="account-sfdc-papi-main">
+        <http:listener config-ref="account-sfdc-papi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="account-sfdc-papi-config" />
+		<error-handler ref="globalErrorHandler" />
+    </flow>
+    <flow name="account-sfdc-papi-console">
+        <http:listener config-ref="account-sfdc-papi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="account-sfdc-papi-config" />
+		<error-handler ref="globalErrorHandler" />
+    </flow>
+    <flow name="put:\accounts\(accountId):application\json:account-sfdc-papi-config">
+        <json-logger:logger doc:name="Logger" doc:id="83ef620a-e4c9-434e-8c78-cab49c7ec5d9" config-ref="JSON_Logger_Config_secured" message="Update account flow started"/>
+		<flow-ref doc:name="update-account-subflow" doc:id="b5f04213-a664-401f-8f38-ad27c25b7c1b" name="update-account-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="250c22e5-7f72-4b20-9bd0-c44da893cddb" config-ref="JSON_Logger_Config_secured" message="Update account flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="get:\ping:account-sfdc-papi-config">
+		<json-logger:logger doc:name="Logger" doc:id="a9307419-fd22-46a9-81aa-3b2d2ff6e323" config-ref="JSON_Logger_Config_secured" message="Ping flow started"/>
+		<flow-ref doc:name="ping-subflow" doc:id="03ff8df7-f530-487a-abbd-ed54749b67c5" name="ping-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="d36ea7de-f60e-462c-b41d-d5cf362bd702" config-ref="JSON_Logger_Config_secured" message="Ping flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="post:\accounts:application\json:account-sfdc-papi-config">
+        <json-logger:logger doc:name="Logger" doc:id="50e8bd71-3248-4260-a4b8-3ad99e3428bb" config-ref="JSON_Logger_Config_secured" message="Create account flow started"/>
+		<flow-ref doc:name="create-account-subflow" doc:id="925b8489-f397-44b9-858f-ecd7efd6dda5" name="create-account-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="9a1cd003-edda-4905-903a-e15ac90ece4e" config-ref="JSON_Logger_Config_secured" message="Create account flow ended" tracePoint="END"/>
+    </flow>
+</mule>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+	
+	
+	<http:listener-config name="account-sfdc-papi-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${https.port}" protocol="HTTPS" tlsContext="TLS_Context"/>
+    </http:listener-config>
+    <apikit:config name="account-sfdc-papi-config" api="resource::112370ec-fc19-4a96-b7b6-60e04b8cbb0d:account-sfdc-papi:1.0.2:raml:zip:account-sfdc-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<import doc:name="Import" doc:id="52e65b2c-a3ef-4cf9-9517-2023da92cd63" doc:description="global xml for generic error handler" file="global.xml" />
+	<import doc:name="Import" doc:id="cb229412-2cc9-4b00-853c-04ed0ba02f5c" doc:description="generic_error_handler_mule.xml" file="generic_error_handler_mule.xml"/>
+    
+	<tls:context name="TLS_Context" doc:name="TLS Context" doc:id="872c4646-c619-4eae-b06e-f082bd069ec4">
+	    <tls:key-store type="${https.keystore.type}" path="${https.keystore.path}"
+	      keyPassword="${secure::keystore.keypass}"
+	      password="${secure::keystore.pass}" />
+    </tls:context>
+    <configuration-properties doc:name="Configuration properties" doc:id="2f36fb8f-0cf2-4799-a630-7a3e38b5d32a" file="properties/common.yaml" doc:description="common properties"/>
+	<configuration-properties doc:name="Configuration properties" doc:id="1ec28f0a-6351-4473-94e0-a06598cc0d65" file="properties/${mule.env}.yaml" doc:description="env level configs"/>
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="b8761257-a09a-4b23-ab78-afb45d135809" flowRef="account-sfdc-papi-main" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="483e7d42-095a-49da-a5a8-cbce2db275a4" file="properties/${mule.env}-secure.yaml" key="${mule.key}" />
+	<http:request-config name="HTTP_Request_configuration_sfdc" doc:name="HTTP Request configuration" doc:id="2d0a6764-31a0-4ab9-933e-27cedf5cb612" doc:description="account_sfdc_sapi">
+		<http:request-connection protocol="${account-sfdc-sapi.protocol}" host="${account-sfdc-sapi.host}" port="${account-sfdc-sapi.port}" >
+			<reconnection >
+				<reconnect frequency="${https.reconnection.frequency}" count="${https.reconnection.attempts}"/>
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration_country" doc:name="HTTP Request configuration" doc:id="720664af-cba1-4e5f-9f3e-ebb06d66ca83" doc:description="first_country_lookup_sapi">
+		<http:request-connection protocol="${first-country-lookup-sapi.protocol}" host="${first-country-lookup-sapi.host}" port="${first-country-lookup-sapi.port}" >
+			<reconnection >
+				<reconnect frequency="${https.reconnection.frequency}" count="${https.reconnection.attempts}"/>
+			</reconnection>
+		</http:request-connection>
+	</http:request-config>
+	
+	
+	
+	</mule>

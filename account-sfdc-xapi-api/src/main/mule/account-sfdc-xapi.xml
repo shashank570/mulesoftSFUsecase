@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+    <flow name="account-sfdc-xapi-main">
+        <http:listener config-ref="account-sfdc-xapi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="account-sfdc-xapi-config" />
+		<error-handler ref="globalErrorHandler" />
+    </flow>
+    <flow name="account-sfdc-xapi-console">
+        <http:listener config-ref="account-sfdc-xapi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="account-sfdc-xapi-config" />
+		<error-handler ref="globalErrorHandler" />
+    </flow>
+    <flow name="put:\accounts\(accountId):application\json:account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="b71867ca-3859-4aa4-9629-ce97625aa9a1" config-ref="JSON_Logger_Config_secured" message="update account subflow started"/>
+		<flow-ref doc:name="update-account-subflow" doc:id="905d0a76-586f-49e0-84eb-705df0bf2951" name="update-account-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="d1234053-b04f-42a3-af20-8e2ad75a98f4" config-ref="JSON_Logger_Config_secured" message="update account subflow ended" tracePoint="END"/>
+    </flow>
+    <flow name="delete:\accounts\(accountId):account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="926f9781-aeee-4679-9f3f-707b22ce39f1" config-ref="JSON_Logger_Config_secured" message="delete account flow ended"/>
+		<flow-ref doc:name="delete-account-subflow" doc:id="8c36c96d-5895-4f84-9437-0066e3fd3986" name="delete-account-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="9e7b8efc-8345-47b0-b58a-4b4809bb26df" config-ref="JSON_Logger_Config_secured" message="delete account flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="get:\accounts:account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="0b169264-166e-4752-8741-878b8a350020" config-ref="JSON_Logger_Config_secured" message="get all account flow started"/>
+		<flow-ref doc:name="get-all-accounts-subflow" doc:id="d3858e21-3155-4d4a-ab8c-3d689fd7b213" name="get-all-accounts-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="46f136d5-dd1b-49cc-9c64-2b5c1dfcc09d" config-ref="JSON_Logger_Config_secured" message="get all account flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="get:\accounts\(accountId):account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="916b3c62-c44a-464d-80d6-5386b46ff0dd" config-ref="JSON_Logger_Config_secured" message="get account by id flow started"/>
+		<flow-ref doc:name="get-account-id-subflow" doc:id="13fa1a3b-24f5-4177-8198-959381ac7cd4" name="get-account-id-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="c4f65860-23e1-45ea-bc30-6e1541ac8617" config-ref="JSON_Logger_Config_secured" message="get account by id flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="get:\ping:account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="5d9513ca-702a-47d2-9f91-f8ca737d38e3" config-ref="JSON_Logger_Config_secured" message="ping flow started"/>
+		<flow-ref doc:name="ping-subflow" doc:id="5acf3494-99ae-4b91-a0f6-b99d688d355b" name="ping-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="4ea85858-a4d1-41b3-8c9c-cdb251b3d939" config-ref="JSON_Logger_Config_secured" message="ping flow ended" tracePoint="END"/>
+    </flow>
+    <flow name="post:\accounts:application\json:account-sfdc-xapi-config">
+        <json-logger:logger doc:name="Logger" doc:id="ae1b24bb-fa32-400f-bc6b-f7bb9f9f4335" config-ref="JSON_Logger_Config_secured" message="create account flow started"/>
+		<flow-ref doc:name="create-account-subflow" doc:id="702750e2-9f5b-4753-ab35-2ad2b943337d" name="create-account-subflow" />
+		<json-logger:logger doc:name="Logger" doc:id="4e9fa41b-75b8-4e70-b5cc-276c1dd74bb2" config-ref="JSON_Logger_Config_secured" message="create account flow ended" tracePoint="END"/>
+    </flow>
+</mule>

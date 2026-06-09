@@ -17,7 +17,24 @@ http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/m
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-{"Id": vars.accountId default ""} ++ payload]]></ee:set-payload>
+{"Id": vars.accountId default ""} ++ 
+{
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingStreet: payload.BillingStreet) if !isEmpty(payload.BillingStreet),
+	(BillingState: payload.BillingState) if !isEmpty(payload.BillingState),
+	(BillingCity: payload.BillingCity) if !isEmpty(payload.BillingCity),
+	(BillingPostalCode: payload.BillingPostalCode) if !isEmpty(payload.BillingPostalCode),
+	(BillingCountry: payload.BillingCountry) if !isEmpty(payload.BillingCountry),
+	(ShippingStreet: payload.ShippingStreet) if !isEmpty(payload.ShippingStreet),
+	(ShippingCity: payload.ShippingCity) if !isEmpty(payload.ShippingCity),
+	(ShippingState: payload.ShippingState) if !isEmpty(payload.ShippingState),
+	(ShippingPostalCode: payload.ShippingPostalCode) if !isEmpty(payload.ShippingPostalCode),
+	(ShippingCountry: payload.ShippingCountry) if !isEmpty(payload.ShippingCountry)
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<try doc:name="Try" doc:id="edc254f0-20ba-4b3d-9e6a-77555148eb3d" >
@@ -209,6 +226,30 @@ output application/json
 		</choice>
 	</sub-flow>
 	<sub-flow name="create-account-subflow" doc:id="cb9e9fcb-c782-4978-9f11-87952cda9c8f" >
+		<ee:transform doc:name="Transform Message" doc:id="ff7da757-4ae0-4a18-8370-d4c919ec04a2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingStreet: payload.BillingStreet) if !isEmpty(payload.BillingStreet),
+	(BillingState: payload.BillingState) if !isEmpty(payload.BillingState),
+	(BillingCity: payload.BillingCity) if !isEmpty(payload.BillingCity),
+	(BillingPostalCode: payload.BillingPostalCode) if !isEmpty(payload.BillingPostalCode),
+	(BillingCountry: payload.BillingCountry) if !isEmpty(payload.BillingCountry),
+	(ShippingStreet: payload.ShippingStreet) if !isEmpty(payload.ShippingStreet),
+	(ShippingCity: payload.ShippingCity) if !isEmpty(payload.ShippingCity),
+	(ShippingState: payload.ShippingState) if !isEmpty(payload.ShippingState),
+	(ShippingPostalCode: payload.ShippingPostalCode) if !isEmpty(payload.ShippingPostalCode),
+	(ShippingCountry: payload.ShippingCountry) if !isEmpty(payload.ShippingCountry)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<try doc:name="Try" doc:id="c1fdd02e-f188-45d2-925c-6d0d5361b6ca" >
 			<salesforce:create type="Account" doc:name="Create Accounts" doc:id="5cdbbe0e-cb9a-49a9-aa3d-cf371785572a" config-ref="Salesforce_Config">
 			<salesforce:records><![CDATA[#[[payload]]]]></salesforce:records>

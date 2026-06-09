@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="get-country-from-iso-subflow" doc:id="4211a069-2dff-4247-86b2-b7205873bf63" >
+		<try doc:name="Try" doc:id="140b65f3-4f7f-4abf-a20c-86bef0a2d45d">
+			<http:request method="GET" doc:name="Request First Country Lookup API" doc:id="8d243e12-fe37-4349-8e3f-59face07edb1" config-ref="HTTP_Request_configuration_country" path="${first-country-lookup-sapi.path}" target="countryLookupAPIResponse">
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p("first-country-lookup-sapi.client_secret"),
+	"client_id" : p("first-country-lookup-sapi.client_id")
+}]]]></http:headers>
+				<http:query-params><![CDATA[#[output application/java
+---
+{
+	"q" : vars.countryCode
+}]]]></http:query-params>
+			</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="118ae9b8-f33e-449a-b176-5118614655ec" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE">
+					<json-logger:logger doc:name="Logger" doc:id="5857f167-55ee-4e71-b802-6e0e552a132b" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling first country lookup api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="006c49ab-1d29-4368-9039-6177c9b6ca32" type="ANY">
+					<json-logger:logger doc:name="Logger" doc:id="e6cbc3a5-6b51-477f-ab69-8297e7cd6d40" config-ref="JSON_Logger_Config_secured" message="issue in calling first country lookup api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="update-account-subflow" doc:id="a9ea5bf2-4173-49d5-bfe3-940906c11e48" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="13081559-b155-4d27-bfff-c344b4ae6099">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Id: vars.accountId,
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingAddress: payload.BillingAddress) if !isEmpty(payload.BillingAddress),
+    (ShippingAddress: payload.ShippingAddress) if !isEmpty(payload.ShippingAddress)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="update-country-subFlow" doc:id="bd32fe8c-9685-44c3-9407-a39c42eea63d" name="update-country-subFlow" />
+		<try doc:name="Try" doc:id="b4a71dfb-cb36-4316-9bbb-7c7caa68fac1" >
+			<http:request method="PUT" doc:name="Request Accounts System API for Update" doc:id="b4ba9b60-96d7-43cd-9c85-fc145bb76dc0" config-ref="HTTP_Request_configuration_sfdc" path="${account-sfdc-sapi.update-path}" >
+				<http:headers ><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-sapi.client_id'),
+	"client_secret" : p('account-sfdc-sapi.client_secret')
+}]]]></http:headers>
+				<http:uri-params ><![CDATA[#[output application/json
+---
+{
+	"accountId": vars.accountId
+}]]]></http:uri-params>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="fd23aec4-d5dc-4389-899f-437e39ba140a" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="f9e3dbb4-4432-4877-8244-00ad5741b27e" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="d07cb84f-4bc1-4c2e-82e0-40bc12a3e1b7" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="e6a65c1d-4198-419d-8c9e-7521dd4c7a94" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: payload.id,
+  message: "Account updated successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-account-subflow" doc:id="6dafdb80-717f-4a19-ac85-09a387032cde" >
+		<ee:transform doc:name="Transform Message" doc:id="d1491fa7-9e69-47d5-8811-9b6d75b741cb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingAddress: payload.BillingAddress) if !isEmpty(payload.BillingAddress),
+    (ShippingAddress: payload.ShippingAddress) if !isEmpty(payload.ShippingAddress)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="update-country-subFlow" doc:id="9ac3c34e-f6d6-4efb-9d22-4247ae17edf8" name="update-country-subFlow" />
+		<try doc:name="Try" doc:id="4dce25f6-e89d-46e3-bf2b-3654b5283025" >
+			<http:request method="POST" doc:name="Request Accounts System API for Create" doc:id="1bc62fd5-e40a-4ca8-8262-f1c3ff173f47" config-ref="HTTP_Request_configuration_sfdc" path="${account-sfdc-sapi.path}">
+				<http:headers ><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-sapi.client_id'),
+	"client_secret" : p('account-sfdc-sapi.client_secret')
+}]]]></http:headers>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d1abb5e2-4aa8-4c4d-8e1d-f5ce3e9e336b" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE">
+					<json-logger:logger doc:name="Logger" doc:id="f7b5cc5a-20df-4ce6-9e60-d19b7a0fdc26" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR"/>
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="33815aac-d49c-4cab-9b47-1c2cf05a5809" type="ANY">
+					<json-logger:logger doc:name="Logger" doc:id="597e83ae-ee4a-43aa-ab41-d1d9e08c6b69" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR"/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: payload.id,
+  message: "Account created successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="ping-subflow" doc:id="4402c485-df4a-413b-944d-3df4fcdba2aa" >
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "UP",
+  timestamp: "2026-06-03T12:00:00Z"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="update-country-subFlow" doc:id="9b1229af-7516-40e6-a145-e9e859f10f56" >
+		<choice doc:name="billingAddress.countryIso?" doc:id="e71fd1c9-ff26-4891-a633-5ceee1aa50c1" >
+			<when expression="#[payload.BillingAddress.CountryISO?]" >
+				<set-variable value="#[payload.BillingAddress.CountryISO]" doc:name="Billing countryCode" doc:id="fcced010-1fe9-4483-b0d5-5316ec80c752" variableName="countryCode" />
+				<flow-ref doc:name="get-countries" doc:id="57028022-aa08-4594-aa22-b66935e890ed" name="get-country-from-iso-subflow" />
+				<ee:transform doc:name="update payload" doc:id="a7065908-445f-492f-b9d9-ea990a0ef8da" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(payload - "BillingAddress") ++ 
+
+{
+    (BillingStreet: payload.BillingAddress.Street) if !isEmpty(payload.BillingAddress.Street),
+	(BillingCity: payload.BillingAddress.City) if !isEmpty(payload.BillingAddress.City),
+    (BillingState: payload.BillingAddress.State) if !isEmpty(payload.BillingAddress.State),
+    (BillingPostalCode: payload.BillingAddress.PostalCode) if !isEmpty(payload.BillingAddress.PostalCode),
+    (BillingCountry: vars.countryLookupAPIResponse.country) if !isEmpty(vars.countryLookupAPIResponse.country)
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<json-logger:logger doc:name="updated billing country" doc:id="d60f2d27-b736-4d61-b8d2-24b9cc6cef9f" config-ref="JSON_Logger_Config_secured" message='#["updated billing country : " ++ payload.BillingCountry default ""]' tracePoint="AFTER_TRANSFORM"/>
+			</when>
+		</choice>
+		<choice doc:name="shippingAddress.countryIso?" doc:id="dd0c46d6-7a63-4eef-8fc2-931bac4b66f3" >
+			<when expression="#[payload.ShippingAddress.CountryISO?]" >
+				<set-variable value="#[payload.ShippingAddress.CountryISO]" doc:name="Shipping countryCode" doc:id="4d235f23-d3df-48e3-9297-8d8bd7908ab2" variableName="countryCode" />
+				<flow-ref doc:name="get-countries" doc:id="4a19329a-5c36-445a-9ca0-4972724a8a60" name="get-country-from-iso-subflow" />
+				<ee:transform doc:name="update payload" doc:id="1e3e34f9-f0f8-4813-8671-26241f38a6b5" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(payload - "ShippingAddress") ++ 
+
+{
+    (ShippingStreet: payload.ShippingAddress.Street) if !isEmpty(payload.ShippingAddress.Street),
+    (ShippingCity: payload.ShippingAddress.City) if !isEmpty(payload.ShippingAddress.City),
+    (ShippingState: payload.ShippingAddress.State) if !isEmpty(payload.ShippingAddress.State),
+    (ShippingPostalCode: payload.ShippingAddress.PostalCode) if !isEmpty(payload.ShippingAddress.PostalCode),
+    (ShippingCountry: vars.countryLookupAPIResponse.country) if !isEmpty(vars.countryLookupAPIResponse.country),
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<json-logger:logger doc:name="updated shipping country" doc:id="507f4bcb-1283-480a-b9f7-9b41a08eb042" config-ref="JSON_Logger_Config_secured" message='#["updated shipping country : " ++ payload.ShippingCountry default ""]' tracePoint="AFTER_TRANSFORM"/>
+			</when>
+		</choice>
+	</sub-flow>
+</mule>

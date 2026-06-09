@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json-logger="http://www.mulesoft.org/schema/mule/json-logger" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/json-logger http://www.mulesoft.org/schema/mule/json-logger/current/mule-json-logger.xsd">
+	<sub-flow name="update-account-subflow" doc:id="db1014ae-c2ec-4008-98e8-373813de0f2f" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="6f6c9dd0-9b4d-4b78-9f8b-8a19ffae50f5">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Id: vars.accountId,
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingAddress: payload.BillingAddress) if !isEmpty(payload.BillingAddress),
+    (ShippingAddress: payload.ShippingAddress) if !isEmpty(payload.ShippingAddress)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="9b34d5e6-2067-4ae7-a245-e9591bdc30e7" >
+			<http:request method="PUT" doc:name="Request" doc:id="a056328b-5065-48ab-9ab6-063e66d37c15" config-ref="HTTP_Request_configuration_papi" path="${account-sfdc-papi.update-path}">
+			<http:headers><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-papi.client_id'),
+	"client_secret" : p('account-sfdc-papi.client_secret')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/json
+---
+{
+	"accountId": vars.accountId
+}]]]></http:uri-params>
+		</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bcd43ea6-d9fd-4f74-97f4-9f6f81ea863d" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="1c75ecac-e922-4f87-9ee4-2cc9a8241d53" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc papi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="63b582fe-a90e-4585-996c-7a2b4a1d5b83" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="daf20161-b266-4007-8f39-a937ea969c18" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc papi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: payload.id,
+  message: "Account updated successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="delete-account-subflow" doc:id="e80acc51-650f-46f6-89fc-d955d2a1fdb2" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<try doc:name="Try" doc:id="1a2af875-0884-4cf2-b928-d71ad3db46bc" >
+			<http:request method="DELETE" doc:name="Request" doc:id="6481b81c-80d2-476b-8884-1dd353fce24d" config-ref="HTTP_Request_configuration_sapi" path="${account-sfdc-sapi.update-path}" >
+				<http:headers ><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-sapi.client_id'),
+	"client_secret" : p('account-sfdc-sapi.client_secret')
+}]]]></http:headers>
+				<http:uri-params ><![CDATA[#[output application/json
+---
+{
+	"accountId": vars.accountId
+}]]]></http:uri-params>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e23565ca-3bcc-45f3-b603-909a117b4d58" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="f69a2dd7-4762-47dd-b27f-216a23946d19" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8f232614-065d-42e2-9e90-9b4de72e4fbd" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="01beaf39-1e7e-40ae-af38-b047ea998a44" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  message: "Account deleted successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-all-accounts-subflow" doc:id="8c3a4004-e0c4-4348-b1a7-42267cee5a26" >
+		<try doc:name="Try" doc:id="a48aa9a7-b2c4-42a2-9fd2-6b30355f29c2" >
+			<http:request method="GET" doc:name="Request" doc:id="bdd312ad-7cf8-4196-a502-133f136c506a" config-ref="HTTP_Request_configuration_sapi" path="${account-sfdc-sapi.path}">
+			<http:headers><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-sapi.client_id'),
+	"client_secret" : p('account-sfdc-sapi.client_secret')
+}]]]></http:headers>
+		</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="61329b74-39cc-4ffd-893e-176bb10d7284" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="b1222eb3-5ca9-4bcd-8efa-cfc359f6c588" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f11f0f42-22c7-491f-bf17-9f4a667db5dd" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="28527d2f-ee91-4774-b3b7-91185a4f6d15" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="get-account-id-subflow" doc:id="b96c21b1-732b-4e54-83a0-430731701ac7" >
+		<ee:transform doc:name="Transform Message">
+            <ee:variables>
+                <ee:set-variable variableName="accountId">attributes.uriParams.'accountId'</ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<try doc:name="Try" doc:id="6ff02617-7a8e-4223-82fb-a40c75948add" >
+			<http:request method="GET" doc:name="Request" doc:id="0e316666-a20c-4a6e-aa18-e65482668bfb" config-ref="HTTP_Request_configuration_sapi" path="${account-sfdc-sapi.update-path}" >
+				<http:headers ><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-sapi.client_id'),
+	"client_secret" : p('account-sfdc-sapi.client_secret')
+}]]]></http:headers>
+				<http:uri-params ><![CDATA[#[output application/json
+---
+{
+	"accountId": vars.accountId
+}]]]></http:uri-params>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1ebabe60-0e48-489f-be12-b09184a40e0a" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="22a6e4d1-900a-485c-bfac-cdc72f718c8a" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="3c5b49ee-5112-48be-adca-c5b68ad741a8" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="f0529ff8-4403-4a23-8b32-caa224d117d3" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc sapi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="create-account-subflow" doc:id="838bfbbc-6a00-4ac5-9f78-46ab64b9c6e4" >
+		<ee:transform doc:name="Transform Message" doc:id="ecec8137-04ad-4d54-b963-4823824fd9ba">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Name: payload.Name,
+	(AccountNumber: payload.AccountNumber) if !isEmpty(payload.AccountNumber),
+	(Type: payload.Type) if !isEmpty(payload.Type),
+	(Phone: payload.Phone) if !isEmpty(payload.Phone),
+	(Website: payload.Website) if !isEmpty(payload.Website),
+	(BillingAddress: payload.BillingAddress) if !isEmpty(payload.BillingAddress),
+    (ShippingAddress: payload.ShippingAddress) if !isEmpty(payload.ShippingAddress)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<try doc:name="Try" doc:id="d77e1968-0da2-4ad0-b070-422f1744d6a5" >
+			<http:request method="POST" doc:name="Request" doc:id="bb41736e-98fc-4c09-b2e0-e83354c62562" config-ref="HTTP_Request_configuration_papi" path="${account-sfdc-papi.path}" >
+				<http:headers ><![CDATA[#[output application/json
+---
+{
+	"client_id" : p('account-sfdc-papi.client_id'),
+	"client_secret" : p('account-sfdc-papi.client_secret')
+}]]]></http:headers>
+			</http:request>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b07466a8-3a7c-44c0-baaf-c243f900771a" type="HTTP:CONNECTIVITY, HTTP:INTERNAL_SERVER_ERROR, HTTP:SERVICE_UNAVAILABLE" >
+					<json-logger:logger doc:name="Logger" doc:id="89ecc0ea-0e85-4312-a3d8-b95ec820cbfa" config-ref="JSON_Logger_Config_secured" message="connectivity Issue in calling account sfdc papi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate1" doc:id="bbc9fade-b222-4037-ae2b-407f2a7567bc" type="ANY" >
+					<json-logger:logger doc:name="Logger" doc:id="db190683-7d47-4cfc-b6df-6134113d8d67" config-ref="JSON_Logger_Config_secured" message="issue in calling account sfdc papi api" tracePoint="EXCEPTION" priority="ERROR" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  success: true,
+  id: payload.id,
+  message: "Account created successfully"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+	<sub-flow name="ping-subflow" doc:id="a8aaaa31-197d-459a-a0ad-ab106c929a8e" >
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status: "UP",
+  timestamp: "2026-06-03T12:00:00Z"
+} as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+</mule>

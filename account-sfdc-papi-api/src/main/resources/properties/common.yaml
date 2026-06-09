@@ -1,0 +1,25 @@
+json:
+  logger:
+    application:
+      name: account-sfdc-papi-api
+      version: v1
+      disabled: content
+      masked: client_id,client_secret
+      
+https:
+  readTimeout: "30000"
+  connectionIdleTimeout: "40000"
+  keystore:
+    path: keystore.jks
+    type: jks
+  reconnection:
+    frequency: "2000"
+    attempts: "2"
+   
+log:
+  category:
+    main: "MAIN_FLOW"
+    error: "ERROR"
+    salesforce: "SALESFORCE_FLOW"
+    other: "OTHER"
+  

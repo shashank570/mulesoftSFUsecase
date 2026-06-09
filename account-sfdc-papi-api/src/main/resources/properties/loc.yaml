@@ -1,0 +1,23 @@
+api:
+  id: "20955045"
+ 
+https:
+  port: "8082"
+  
+account-sfdc-sapi:
+  protocol: "HTTPS"
+  host: "account-sfdc-sapi-api-zvipmj.5sc6y6-3.usa-e2.cloudhub.io"
+  port: "443"
+  path: "/api/accounts"
+  update-path: "/api/accounts/{accountId}"
+  client_id: "b32dad7342154fef85f9cf8d7d102fc0"
+  client_secret: "27Ef633762164FF18255FB6C216C91B1"
+  
+  
+first-country-lookup-sapi:
+  protocol: "HTTPS"
+  host: "first-country-lookup-sapi-api-zvipmj.5sc6y6-1.usa-e2.cloudhub.io"
+  port: "443"
+  path: "/api/countries"
+  client_id: "fa513a088554482b8b7d500a2c7b68fe"
+  client_secret: "81d58fDf8d454295A098688eA2dbB01F"
